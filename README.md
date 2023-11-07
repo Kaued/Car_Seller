@@ -27,10 +27,6 @@ To set up and run the Car_Seller project, follow these steps:
 
 The API will be accessible on your local server.
 
-## Endpoints
-
-The project includes various endpoints for interacting with the car sales API. Refer to the API documentation or code comments for details about available endpoints and their functionalities.
-
 ## Technologies Used
 
 - **Backend Framework**: Laravel (specific version used in your project).
