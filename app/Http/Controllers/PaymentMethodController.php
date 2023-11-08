@@ -2,29 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StorePaymentMethodRequest;
+use App\Http\Requests\UpdatePaymentMethodRequest;
 use App\Models\PaymentMethod;
+use App\Repositories\PaymentMethodRepository;
 use Illuminate\Http\Request;
 
 class PaymentMethodController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private PaymentMethod $paymentMethod;
+
+    public function __construct(PaymentMethod $paymentMethod)
     {
-        //
+        $this->paymentMethod = $paymentMethod;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function index(Request $request)
     {
-        //
+        $paymentMethodRepository = new PaymentMethodRepository($this->paymentMethod);
+
+        if ($request->has("attribute")) {
+            $paymentMethodRepository->selectAttributes($request->attribute);
+        }
+
+        if ($request->has("filter")) {
+            $paymentMethodRepository->filterSelection($request->filter);
+        }
+
+        return response($paymentMethodRepository->getResult(), 200);
     }
 
     /**
@@ -33,9 +38,11 @@ class PaymentMethodController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StorePaymentMethodRequest $request)
     {
-        //
+        $validation = $request->validated();
+        $this->paymentMethod = $this->paymentMethod->create($validation);
+        return response($this->paymentMethod, 200);
     }
 
     /**
@@ -44,9 +51,13 @@ class PaymentMethodController extends Controller
      * @param  \App\Models\PaymentMethod  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function show(PaymentMethod $paymentMethod)
+    public function show($id)
     {
-        //
+        $paymentMethod = $this->paymentMethod->find($id);
+        if ($paymentMethod === null) {
+            return response(["message" => "Metódo do pagamento não encontrado"], 404);
+        }
+        return response($paymentMethod, 200);
     }
 
     /**
@@ -55,11 +66,6 @@ class PaymentMethodController extends Controller
      * @param  \App\Models\PaymentMethod  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function edit(PaymentMethod $paymentMethod)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      *
@@ -67,9 +73,21 @@ class PaymentMethodController extends Controller
      * @param  \App\Models\PaymentMethod  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, PaymentMethod $paymentMethod)
+    public function update(UpdatePaymentMethodRequest $request, $id)
     {
-        //
+        $changePaymentMethod = $this->paymentMethod->find($id);
+
+        if ($changePaymentMethod === null) {
+            return response(["message" => "Metódo do pagamento não encontrado"], 404);
+        }
+
+        $validation = $request->validated();
+
+        $changePaymentMethod->fill($validation);
+
+        $changePaymentMethod->save();
+
+        return response($changePaymentMethod, 200);
     }
 
     /**
@@ -78,8 +96,15 @@ class PaymentMethodController extends Controller
      * @param  \App\Models\PaymentMethod  $paymentMethod
      * @return \Illuminate\Http\Response
      */
-    public function destroy(PaymentMethod $paymentMethod)
+    public function destroy($id)
     {
-        //
+        $deletePaymentMethod = $this->paymentMethod->find($id);
+
+        if ($deletePaymentMethod === null) {
+            return response(["message" => "Metódo do pagamento não encontrado"], 404);
+        }
+
+        $deletePaymentMethod->delete();
+        return response("Deletado com sucesso", 200);
     }
 }

@@ -10,4 +10,8 @@ class Customer extends Model
     use HasFactory;
 
     protected $fillable=["name", "age"];
+
+    public function shopping(){
+        return $this->hasMany("App\Models\Sale");
+    }
 }

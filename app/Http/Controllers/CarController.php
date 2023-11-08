@@ -2,29 +2,39 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreCarRequest;
+use App\Http\Requests\UpdateCarRequest;
 use App\Models\Car;
+use App\Repositories\CarRepository;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Storage;
 
 class CarController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private Car $car;
+
+    public function __construct(Car $car)
     {
-        //
+        $this->car = $car;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function index(Request $request)
     {
-        //
+        $carRepository = new CarRepository($this->car);
+
+        if ($request->has("attribute")) {
+            $carRepository->selectAttributes($request->attribute);
+        }
+
+        if ($request->has("filter")) {
+            $carRepository->filterSelection($request->filter);
+        }
+
+        if ($request->has("with")) {
+            $carRepository->with($request->with);
+        }
+
+        return response($carRepository->getResult(), 200);
     }
 
     /**
@@ -33,9 +43,14 @@ class CarController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreCarRequest $request)
     {
-        //
+        $validation = $request->validated();
+        $image = $request->file("image");
+        $validation["image_url"] = $image->store("imagens/car", "public");
+        $validation["sold"] = false;
+        $this->car = $this->car->create($validation);
+        return response($this->car, 200);
     }
 
     /**
@@ -44,9 +59,13 @@ class CarController extends Controller
      * @param  \App\Models\Car  $car
      * @return \Illuminate\Http\Response
      */
-    public function show(Car $car)
+    public function show($id)
     {
-        //
+        $car = $this->car->find($id);
+        if ($car === null) {
+            return response(["message" => "Carro não encontrado"], 404);
+        }
+        return response($car, 200);
     }
 
     /**
@@ -55,11 +74,6 @@ class CarController extends Controller
      * @param  \App\Models\Car  $car
      * @return \Illuminate\Http\Response
      */
-    public function edit(Car $car)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      *
@@ -67,9 +81,31 @@ class CarController extends Controller
      * @param  \App\Models\Car  $car
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Car $car)
+    public function update(UpdateCarRequest $request, $id)
     {
-        //
+        $changeCar = $this->car->find($id);
+
+        if ($changeCar === null) {
+            return response(["message" => "Carro não encontrado"], 404);
+        }
+
+
+        $validation = $request->validated();
+
+        if ($request->has("image")) {
+            $image = $request->file("image");
+            $image_url = $image->store("imagens/car", "public");
+
+            Storage::disk("public")->delete($changeCar->image_url);
+
+            $changeCar->fill(["image_url" => $image_url]);
+        }
+
+        $changeCar->fill($validation);
+
+        $changeCar->save();
+
+        return response($changeCar, 200);
     }
 
     /**
@@ -78,8 +114,16 @@ class CarController extends Controller
      * @param  \App\Models\Car  $car
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Car $car)
+    public function destroy($id)
     {
-        //
+        $deleteCar = $this->car->find($id);
+
+        if ($deleteCar === null) {
+            return response(["message" => "Carro não encontrado"], 404);
+        }
+        Storage::disk("public")->delete($deleteCar->image_url);
+
+        $deleteCar->delete();
+        return response("Deletado com sucesso", 200);
     }
 }

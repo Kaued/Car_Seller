@@ -10,4 +10,8 @@ class Seller extends Model
     use HasFactory;
 
     protected $fillable=["name", "salary"];
+
+    public function sales(){
+        return $this->hasMany("App\Models\Sale");
+    }
 }

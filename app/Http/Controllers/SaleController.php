@@ -2,29 +2,40 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSaleRequest;
+use App\Http\Requests\UpdateSaleRequest;
+use App\Models\Car;
+use App\Models\PaymentMethod;
 use App\Models\Sale;
+use App\Repositories\SaleRepository;
 use Illuminate\Http\Request;
 
 class SaleController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private Sale $sale;
+
+    public function __construct(Sale $sale)
     {
-        //
+        $this->sale = $sale;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function index(Request $request)
     {
-        //
+        $saleRepository = new SaleRepository($this->sale);
+
+        if ($request->has("attribute")) {
+            $saleRepository->selectAttributes($request->attribute);
+        }
+
+        if ($request->has("filter")) {
+            $saleRepository->filterSelection($request->filter);
+        }
+
+        if ($request->has("with")) {
+            $saleRepository->with($request->with);
+        }
+
+        return response($saleRepository->getResult(), 200);
     }
 
     /**
@@ -33,9 +44,14 @@ class SaleController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreSaleRequest $request)
     {
-        //
+        $validation = $request->validated();
+        $car = Car::find($validation["car_id"]);
+        $tax = PaymentMethod::find($validation["payment_method_id"]);
+        $validation["total_price"]= $car->price*($tax->tax+1);
+        $this->sale = $this->sale->create($validation);
+        return response($this->sale, 200);
     }
 
     /**
@@ -44,9 +60,13 @@ class SaleController extends Controller
      * @param  \App\Models\Sale  $sale
      * @return \Illuminate\Http\Response
      */
-    public function show(Sale $sale)
+    public function show($id)
     {
-        //
+        $sale = $this->sale->find($id);
+        if ($sale === null) {
+            return response(["message" => "Cliente não encontrado"], 404);
+        }
+        return response($sale, 200);
     }
 
     /**
@@ -55,11 +75,6 @@ class SaleController extends Controller
      * @param  \App\Models\Sale  $sale
      * @return \Illuminate\Http\Response
      */
-    public function edit(Sale $sale)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      *
@@ -67,9 +82,25 @@ class SaleController extends Controller
      * @param  \App\Models\Sale  $sale
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Sale $sale)
+    public function update(UpdateSaleRequest $request, $id)
     {
-        //
+        $changeSale = $this->sale->find($id);
+
+        if ($changeSale === null) {
+            return response(["message" => "Cliente não encontrado"], 404);
+        }
+
+        $validation = $request->validated();
+
+        $car = Car::find($validation["car_id"]);
+        $tax = PaymentMethod::find($validation["payment_method_id"]);
+        $validation["total_price"] = $request->has("total_price") ? $validation["total_price"] : $car->price * ($tax->tax + 1);
+
+        $changeSale->fill($validation);
+
+        $changeSale->save();
+
+        return response($changeSale, 200);
     }
 
     /**
@@ -78,8 +109,15 @@ class SaleController extends Controller
      * @param  \App\Models\Sale  $sale
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Sale $sale)
+    public function destroy($id)
     {
-        //
+        $deleteSale = $this->sale->find($id);
+
+        if ($deleteSale === null) {
+            return response(["message" => "Cliente não encontrado"], 404);
+        }
+
+        $deleteSale->delete();
+        return response("Deletado com sucesso", 200);
     }
 }

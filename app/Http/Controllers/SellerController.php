@@ -2,29 +2,34 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\StoreSelleRequest;
+use App\Http\Requests\UpdateSelleRequest;
 use App\Models\Seller;
+use App\Repositories\SellerRepository;
 use Illuminate\Http\Request;
 
 class SellerController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index()
+    private Seller $seller;
+
+    public function __construct(Seller $seller)
     {
-        //
+        $this->seller = $seller;
     }
 
-    /**
-     * Show the form for creating a new resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function create()
+    public function index(Request $request)
     {
-        //
+        $sellerRepository = new SellerRepository($this->seller);
+
+        if ($request->has("attribute")) {
+            $sellerRepository->selectAttributes($request->attribute);
+        }
+
+        if ($request->has("filter")) {
+            $sellerRepository->filterSelection($request->filter);
+        }
+
+        return response($sellerRepository->getResult(), 200);
     }
 
     /**
@@ -33,9 +38,11 @@ class SellerController extends Controller
      * @param  \Illuminate\Http\Request  $request
      * @return \Illuminate\Http\Response
      */
-    public function store(Request $request)
+    public function store(StoreSelleRequest $request)
     {
-        //
+        $validation = $request->validated();
+        $this->seller = $this->seller->create($validation);
+        return response($this->seller, 200);
     }
 
     /**
@@ -44,9 +51,13 @@ class SellerController extends Controller
      * @param  \App\Models\Seller  $seller
      * @return \Illuminate\Http\Response
      */
-    public function show(Seller $seller)
+    public function show($id)
     {
-        //
+        $seller = $this->seller->find($id);
+        if ($seller === null) {
+            return response(["message" => "Vendedor não encontrado"], 404);
+        }
+        return response($seller, 200);
     }
 
     /**
@@ -55,11 +66,6 @@ class SellerController extends Controller
      * @param  \App\Models\Seller  $seller
      * @return \Illuminate\Http\Response
      */
-    public function edit(Seller $seller)
-    {
-        //
-    }
-
     /**
      * Update the specified resource in storage.
      *
@@ -67,9 +73,21 @@ class SellerController extends Controller
      * @param  \App\Models\Seller  $seller
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Seller $seller)
+    public function update(UpdateSelleRequest $request, $id)
     {
-        //
+        $changeSeller = $this->seller->find($id);
+
+        if ($changeSeller === null) {
+            return response(["message" => "Vendedor não encontrado"], 404);
+        }
+
+        $validation = $request->validated();
+
+        $changeSeller->fill($validation);
+
+        $changeSeller->save();
+
+        return response($changeSeller, 200);
     }
 
     /**
@@ -78,8 +96,15 @@ class SellerController extends Controller
      * @param  \App\Models\Seller  $seller
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Seller $seller)
+    public function destroy($id)
     {
-        //
+        $deleteSeller = $this->seller->find($id);
+
+        if ($deleteSeller === null) {
+            return response(["message" => "Vendedor não encontrado"], 404);
+        }
+
+        $deleteSeller->delete();
+        return response("Deletado com sucesso", 200);
     }
 }
