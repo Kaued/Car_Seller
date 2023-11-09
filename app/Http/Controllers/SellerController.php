@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreSelleRequest;
 use App\Http\Requests\UpdateSelleRequest;
 use App\Models\Seller;
@@ -17,10 +18,12 @@ class SellerController extends Controller
         $this->seller = $seller;
     }
 
-    public function index(Request $request)
+    public function index(FilterRequest $request)
     {
         $sellerRepository = new SellerRepository($this->seller);
 
+        $request->validated();
+        
         if ($request->has("attribute")) {
             $sellerRepository->selectAttributes($request->attribute);
         }

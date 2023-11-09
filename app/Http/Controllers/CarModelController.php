@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreCarModelRequest;
 use App\Http\Requests\UpdateCarModelRequest;
 use App\Models\CarModel;
@@ -17,9 +18,11 @@ class CarModelController extends Controller
         $this->carModel = $carModel;
     }
 
-    public function index(Request $request)
+    public function index(FilterRequest $request)
     {
         $carModelRepository = new CarModelRepository($this->carModel);
+
+        $request->validated();
 
         if ($request->has("attribute")) {
             $carModelRepository->selectAttributes($request->attribute);
@@ -31,6 +34,10 @@ class CarModelController extends Controller
 
         if ($request->has("with")) {
             $carModelRepository->with($request->with);
+        }
+
+        if ($request->has("filterWith")) {
+            $carModelRepository->filterWith($request->filterWith);
         }
 
         return response($carModelRepository->getResult(), 200);

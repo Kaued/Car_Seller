@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StorePaymentMethodRequest;
 use App\Http\Requests\UpdatePaymentMethodRequest;
 use App\Models\PaymentMethod;
@@ -17,10 +18,12 @@ class PaymentMethodController extends Controller
         $this->paymentMethod = $paymentMethod;
     }
 
-    public function index(Request $request)
+    public function index(FilterRequest $request)
     {
         $paymentMethodRepository = new PaymentMethodRepository($this->paymentMethod);
 
+        $request->validated();
+        
         if ($request->has("attribute")) {
             $paymentMethodRepository->selectAttributes($request->attribute);
         }

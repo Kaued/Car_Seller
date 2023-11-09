@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreCustomeRequest;
 use App\Http\Requests\UpdateCustomeRequest;
 use App\Models\Customer;
@@ -17,9 +18,11 @@ class CustomerController extends Controller
         $this->customer = $customer;
     }
 
-    public function index(Request $request)
+    public function index(FilterRequest $request)
     {
         $customerRepository = new CustomerRepository($this->customer);
+
+        $request->validated();
 
         if($request->has("attribute")){
             $customerRepository->selectAttributes($request->attribute);

@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreBrandRequest;
 use App\Http\Requests\UpdateBrandRequest;
 use App\Models\Brand;
@@ -18,9 +19,11 @@ class BrandController extends Controller
         $this->brand = $brand;
     }
 
-    public function index(Request $request)
+    public function index(FilterRequest $request)
     {
         $brandRepository = new BrandRepository($this->brand);
+
+        $request->validated();
 
         if ($request->has("attribute")) {
             $brandRepository->selectAttributes($request->attribute);

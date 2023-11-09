@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\FilterRequest;
 use App\Http\Requests\StoreSaleRequest;
 use App\Http\Requests\UpdateSaleRequest;
 use App\Models\Car;
@@ -19,10 +20,12 @@ class SaleController extends Controller
         $this->sale = $sale;
     }
 
-    public function index(Request $request)
+    public function index(FilterRequest $request)
     {
         $saleRepository = new SaleRepository($this->sale);
 
+        $request->validated();
+        
         if ($request->has("attribute")) {
             $saleRepository->selectAttributes($request->attribute);
         }
@@ -33,6 +36,10 @@ class SaleController extends Controller
 
         if ($request->has("with")) {
             $saleRepository->with($request->with);
+        }
+
+        if ($request->has("filterWith")) {
+            $saleRepository->filterWith($request->filterWith);
         }
 
         return response($saleRepository->getResult(), 200);
@@ -48,9 +55,14 @@ class SaleController extends Controller
     {
         $validation = $request->validated();
         $car = Car::find($validation["car_id"]);
+        if($car->sold){
+            return response("Carro já foi vendido anteriormente");
+        }
         $tax = PaymentMethod::find($validation["payment_method_id"]);
         $validation["total_price"]= $car->price*($tax->tax+1);
         $this->sale = $this->sale->create($validation);
+        $car->fill(["sold"=>true]);
+        $car->save();
         return response($this->sale, 200);
     }
 
@@ -94,11 +106,19 @@ class SaleController extends Controller
 
         $car = Car::find($validation["car_id"]);
         $tax = PaymentMethod::find($validation["payment_method_id"]);
+
+        if ($car->sold && $changeSale->car_id != $car->id) {
+            return response("Carro já foi vendido anteriormente");
+        }
+
         $validation["total_price"] = $request->has("total_price") ? $validation["total_price"] : $car->price * ($tax->tax + 1);
 
         $changeSale->fill($validation);
 
         $changeSale->save();
+
+        $car->fill(["sold" => true]);
+        $car->save();
 
         return response($changeSale, 200);
     }
