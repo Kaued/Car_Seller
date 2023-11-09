@@ -14,7 +14,7 @@ To set up and run the Car_Seller project, follow these steps:
 1. Clone this repository.
 2. Ensure you have PHP, Composer, and Laravel installed on your machine.
 3. Set up a PostgreSQL database.
-4. Execute the `Script.sql` file included in the project to create the necessary tables and structure within the PostgreSQL database.
+4. Execute the `script.txt` file included in the project to create the necessary tables and structure within the PostgreSQL database.
 5. Update the `.env` file with your PostgreSQL database configuration details.
 6. Install project dependencies using Composer:
     ```bash

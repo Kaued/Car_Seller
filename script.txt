@@ -1,0 +1,67 @@
+create table brands(
+	id serial not null primary key,
+	name varchar(60) not null unique,
+	image_url varchar(255) not null,
+	created_at date not null,
+	updated_at date null
+);
+create table car_models(
+	id serial not null primary key,
+	name varchar(127) not null,
+	year int not null,
+	doors int not null,
+	seat int not null,
+	airbag boolean not null,
+	abs boolean not null,
+	brand_id int not null references brands(id),
+	created_at date not null,
+	updated_at date null
+);
+
+create table cars(
+	id serial not null primary key,
+	car_model_id int not null references car_models(id),
+	price numeric(12,2) not null,
+	km numeric(12, 2) not null,
+	sold boolean not null,
+	image_url varchar(255) not null,
+	created_at date not null,
+	updated_at date null
+);
+
+create table customers(
+	id serial not null primary key,
+	name varchar(127) not null,
+	age int not null,
+	created_at date not null,
+	updated_at date null
+);
+
+create table sellers(
+	id serial not null primary key,
+	name varchar(127) not null,
+	salary numeric(8, 2) not null,
+	created_at date not null,
+	updated_at date null
+);
+
+create table payment_methods (
+	id serial not null primary key,
+	name varchar(60) not null,
+	tax numeric(5, 2) not null,
+	created_at date not null,
+	updated_at date null
+);
+
+create table sales (
+	id serial not null primary key,
+	total_price numeric(12, 2) not null,
+	sold_data date not null,
+	customer_id int not null references customers(id),
+	seller_id int not null references sellers (id),
+	car_id int not null references cars (id),
+	payment_method_id int not null references payment_methods(id),
+	created_at date not null,
+	updated_at date null
+
+);
