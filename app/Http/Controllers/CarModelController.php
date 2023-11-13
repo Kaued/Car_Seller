@@ -116,6 +116,6 @@ class CarModelController extends Controller
         }
 
         $deleteCarModel->delete();
-        return response("Deletado com sucesso", 200);
+        return response(["message"=>"Deletado Com sucesso"], 200);
     }
 }

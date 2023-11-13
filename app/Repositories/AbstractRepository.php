@@ -32,7 +32,7 @@ abstract class AbstractRepository
     }
 
     public function with(string $with)
-    {
+    {       
         $foreign = explode(",", $with);
 
         foreach ($foreign as $key => $w) {

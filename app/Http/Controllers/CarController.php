@@ -131,6 +131,6 @@ class CarController extends Controller
         Storage::disk("public")->delete($deleteCar->image_url);
 
         $deleteCar->delete();
-        return response("Deletado com sucesso", 200);
+        return response(["message"=>"Deletado Com sucesso"], 200);
     }
 }

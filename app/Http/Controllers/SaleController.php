@@ -25,7 +25,7 @@ class SaleController extends Controller
         $saleRepository = new SaleRepository($this->sale);
 
         $request->validated();
-        
+
         if ($request->has("attribute")) {
             $saleRepository->selectAttributes($request->attribute);
         }
@@ -138,6 +138,6 @@ class SaleController extends Controller
         }
 
         $deleteSale->delete();
-        return response("Deletado com sucesso", 200);
+        return response(["message"=>"Deletado Com sucesso"], 200);
     }
 }

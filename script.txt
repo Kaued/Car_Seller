@@ -65,3 +65,4 @@ create table sales (
 	updated_at date null
 
 );
+    

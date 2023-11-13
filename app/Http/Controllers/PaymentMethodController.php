@@ -23,7 +23,7 @@ class PaymentMethodController extends Controller
         $paymentMethodRepository = new PaymentMethodRepository($this->paymentMethod);
 
         $request->validated();
-        
+
         if ($request->has("attribute")) {
             $paymentMethodRepository->selectAttributes($request->attribute);
         }
@@ -108,6 +108,6 @@ class PaymentMethodController extends Controller
         }
 
         $deletePaymentMethod->delete();
-        return response("Deletado com sucesso", 200);
+        return response(["message"=>"Deletado Com sucesso"], 200);
     }
 }
