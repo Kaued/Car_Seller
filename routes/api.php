@@ -26,3 +26,4 @@ Route::apiResource('brand', 'BrandController');
 Route::apiResource('carModel', 'CarModelController');
 Route::apiResource('car', 'CarController');
 Route::apiResource('sale', 'SaleController');
+Route::get("storage/{path}/{past}/{file}", 'DownloadController@Download');
