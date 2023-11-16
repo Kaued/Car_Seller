@@ -24,7 +24,7 @@ class UpdateSaleRequest extends FormRequest
     public function rules()
     {
         return [
-            "total_price"=>"number",
+            "total_price"=>"numeric",
             "sold_data" => "date",
             "customer_id" => "exists:customers,id|integer",
             "seller_id" => "exists:sellers,id|integer",
