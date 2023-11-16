@@ -24,10 +24,10 @@ class FilterRequest extends FormRequest
     public function rules()
     {
         return [
-            "attribute" => "string|min:1",
-            "filter" => "string|min:1",
-            "with" => "string|min:1|required_with:filterWith",
-            "filterWith" => "string|min:1"
+            "attribute" => "min:0",
+            "filter" => "min:0",
+            "with" => "min:0|required_with:filterWith",
+            "filterWith" => "min:0"
         ];
     }
 }
